@@ -1,0 +1,48 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  labels:
+    app: frontend
+  name: frontend
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: frontend
+  template:
+    metadata:
+      labels:
+        app: frontend
+    spec:
+      containers:
+      - image: lqp2792/demo-k8s-frontend:1.0.1
+        imagePullPolicy: IfNotPresent
+        name: frontend
+        env:
+        - name: JOURNAL_ENTRIES
+          valueFrom:
+            configMapKeyRef:
+              name: frontend-config
+              key: journal_entries
+        - name: REDIS_READ_HOST
+          valueFrom:
+            configMapKeyRef:
+              name: frontend-config
+              key: redis_read_host
+        - name: REDIS_WRITE_HOST
+          valueFrom:
+            configMapKeyRef:
+              name: frontend-config
+              key: redis_write_host
+        - name: REDIS_PASSWD
+          valueFrom:
+            secretKeyRef:
+              name: redis-passwd
+              key: passwd
+        resources:
+          requests:
+            cpu: 0.25
+            memory: 0.25G
+          limits:
+            cpu: 0.5
+            memory: 0.5G

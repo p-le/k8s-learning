@@ -1,0 +1,50 @@
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  name: redis
+spec:
+  selector:
+    matchLabels:
+      app: redis
+  serviceName: redis
+  replicas: 3
+  template:
+    metadata:
+      labels:
+        app: redis
+    spec:
+      # terminationGracePeriodSeconds: 10
+      volumes:
+      - name: startup-script
+        configMap:
+          name: redis-startup
+          defaultMode: 0777
+      - name: redis-passwd
+        secret:
+          secretName: redis-passwd
+      containers:
+      - name: redis
+        image: redis:6.2-buster
+        command:
+        - sh
+        - -c
+        - /script/startup.sh
+        ports:
+        - name: redis
+          containerPort: 6379
+        volumeMounts:
+        - name: data
+          mountPath: /data
+        - name: startup-script
+          mountPath: /script/startup.sh
+          subPath: startup.sh
+        - name: redis-passwd
+          mountPath: /etc/redis-passwd
+  volumeClaimTemplates:
+  - metadata:
+      name: data
+    spec:
+      accessModes: [ "ReadWriteOnce" ]
+      resources:
+        requests:
+          storage: 1Gi

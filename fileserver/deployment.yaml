@@ -1,0 +1,34 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  labels:
+    app: fileserver
+  name: fileserver
+spec:
+  replicas: 3
+  selector:
+    matchLabels:
+      app: fileserver
+  template:
+    metadata:
+      labels:
+        app: fileserver
+    spec:
+      volumes:
+      - name: static-files
+        hostPath:
+          path: /data/assets # minikube mount
+          type: Directory
+      containers:
+      - image: lqp2792/demo-k8s-fileserver:1.0.1
+        imagePullPolicy: Always
+        name: fileserver
+        resources:
+          requests:
+            memory: 0.125G
+          limits:
+            memory: 0.25G
+        volumeMounts:
+        - name: static-files
+          mountPath: /www/data
+          readOnly: true
